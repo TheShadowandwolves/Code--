@@ -4,10 +4,19 @@ import Modules.PARSER as Parser
 # Interpreter
 class Interpreter:
     def __init__(self, text, Debug):
-        self.lexer = Lexer.Lexer(text, Debug)
-        self.parser = Parser.Parser(self.lexer, Debug)
-        self.result = self.parser.parse()
+        self.stack = []
+        self.text = text
         self.Debug = Debug
+
+    def TOKENIZE(self):
+        pos = 0
+        lexer = Lexer.Lexer(self.text)
+        while pos < len(self.text):
+            self.stack.append(lexer.get_next_token())
+            pos += 1
+        
+    
+
 
     def __str__(self):
         self.Debug.df("RESULT",self.result)

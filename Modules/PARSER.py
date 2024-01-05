@@ -75,27 +75,26 @@ tokens = {
 
 }
 class Parser:
-    def __init__(self, lexer: Lex.Lexer, Debug):
-        self.lexTokens = lexer.tokenize()
-        self.length = len(self.lexTokens)
+    def __init__(self, stack, Debug):
+        self.TokenStack = stack
+        self.length = len(self.TokenStack)
         self.pos = 0
         self.Debug = Debug
     
     @property
     def current_token(self):
-        return {'value': self.lexTokens[self.pos].value, 'type': self.lexTokens[self.pos].type}
-
-    def nextToken(self):
-        if self.pos < self.length:
-            temp = self.lexTokens[self.pos]
-            self.pos += 1
-            return temp
-        else:
-            return Tok.Token(tokens['EOF'], None)
+        return self.TokenStack[self.pos]
 
     def error(self):
         raise Exception('Invalid syntax')
     
+    def nextToken(self):
+        if self.pos < self.length:
+            self.pos += 1
+            return self.TokenStack[self.pos]
+        else:
+            self.error()
+
     def eat(self, token_type):
         if self.current_token['type'] == token_type:
             temp = self.current_token
