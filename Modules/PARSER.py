@@ -77,7 +77,8 @@ tokens = {
 class Parser:
     def __init__(self, stack, Debug):
         self.TokenStack = stack
-        self.length = len(self.TokenStack)
+        self.length = len(stack)
+        self.bin = []
         self.pos = 0
         self.Debug = Debug
     
@@ -97,68 +98,86 @@ class Parser:
 
     def eat(self, token_type):
         if self.current_token['type'] == token_type:
-            temp = self.current_token
+            temp = self.nextToken()
             self.current_token['type'] = temp['type']
             self.current_token['value'] = temp['value']
         else:
             self.error()
     
-    
-    
+
     def factor(self):
         token = self.current_token
 
-        if token['type'] == tokens['NUM']:
-            self.eat(tokens['NUM'])
-            return token['value']
-        elif token['type'] == tokens['LPAREN']:
-            self.eat(tokens['LPAREN'])
-            result = self.expr()
-            self.eat(tokens['RPAREN'])
-            return result
-        elif token['type'] == tokens['STRING']:
-            self.eat(tokens['STRING'])
-            return token['value']
-        elif token['type'] == tokens['IDENTIFIER']:
-            self.eat(tokens['IDENTIFIER'])
-            return token['value']
-        elif token['type'] == tokens['BOOL']:
-            self.eat(tokens['BOOL'])
-            return token['value']
-        elif token['type'] == tokens['NIL']:
-            self.eat(tokens['NIL'])
-            return token['value']
-        elif token['type'] == tokens['TRUE']:
-            self.eat(tokens['TRUE'])
-            return token['value']
-        elif token['type'] == tokens['FALSE']:
-            self.eat(tokens['FALSE'])
-            return token['value']
-        else:
-            self.error()
-    
-    def term(self):
-        result = self.factor()
-
-        while self.current_token['type'] in (tokens['PLUS'], tokens['MINUS'], tokens['MULTIPLY'], tokens['DIVIDE']):
-            token = self.current_token
-            if token['type'] == tokens['PLUS']:
+        match token['type']:
+            case 'PLUS':
                 self.eat(tokens['PLUS'])
-                result += self.factor()
-            elif token['type'] == tokens['MINUS']:
+                if (self.bin[-1] == tokens['NUM']):
+                    return self.bin.pop() + self.factor()
+                else:
+                    self.error()
+            case 'MINUS':
                 self.eat(tokens['MINUS'])
-                result -= self.factor()
-            elif token['type'] == tokens['MULTIPLY']:
+                if (self.bin[-1] == tokens['NUM']):
+                    return self.bin.pop() - self.factor()
+                else:
+                    self.error()
+            case 'MULTIPLY':
                 self.eat(tokens['MULTIPLY'])
-                result *= self.factor()
-            elif token['type'] == tokens['DIVIDE']:
+                if (self.bin[-1] == tokens['NUM']):
+                    return self.bin.pop() * self.factor()
+                else:
+                    self.error()
+            case 'DIVIDE':
                 self.eat(tokens['DIVIDE'])
-                result /= self.factor()
+                if (self.bin[-1] == tokens['NUM']):
+                    return self.bin.pop() / self.factor()
+                else:
+                    self.error()
+            case 'NUM':
+                self.eat(tokens['NUM'])
+                self.bin.append(token['value'])
+                return token['value']
+            case 'STRING':
+                self.eat(tokens['STRING'])
+                self.bin.append(token['value'])
+                return token['value']
+            case 'IDENTIFIER':
+                self.eat(tokens['IDENTIFIER'])
+                self.bin.append(token['value'])
+                return token['value']
+            case 'BOOL':
+                self.eat(tokens['BOOL'])
+                self.bin.append(token['value'])
+                return token['value']
+            case 'NIL':
+                self.eat(tokens['NIL'])
+                self.bin.append(token['value'])
+                return token['value']
+            case 'LPAREN':
+                self.eat(tokens['LPAREN'])
+                args = []
+                while self.current_token['type'] != tokens['RPAREN']:
+                    args.append(self.expr())
+                self.eat(tokens['RPAREN'])
+                return args
+            case 'EOF':
+                self.eat(tokens['EOF'])
+                return None
+            case 'ERROR':
+                self.eat(tokens['ERROR'])
+                return None
+            case 'COMMENT':
+                self.eat(tokens['COMMENT'])
+                return None
+            case 'KEYWORD':
+                self.eat(tokens['KEYWORD'])
+                return None
+            case _:
+                self.error()
 
-        return result
     
     def expr(self):
-        return self.term()
+        return self.factor()
     
     def parse(self):
         return self.expr()

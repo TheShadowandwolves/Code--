@@ -14,5 +14,5 @@ while COMPILE_RUN:
     Debug.now()
     Debug.df("Text input",text)
     interpretter = INTERPRETTER.Interpreter(text, Debug)
-    print(interpretter)
+    print(interpretter.PARSE())
 

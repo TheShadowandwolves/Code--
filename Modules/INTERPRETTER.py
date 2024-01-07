@@ -15,12 +15,13 @@ class Interpreter:
             self.stack.append(lexer.get_next_token())
             pos += 1
         
+    def PARSE(self):
+        parser = Parser.Parser(self.stack, self.Debug)
+        result = parser.parse()
+        return result
     
 
 
-    def __str__(self):
-        self.Debug.df("RESULT",self.result)
-        return str(self.result)
 
 
 # def interpret(text):
