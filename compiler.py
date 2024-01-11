@@ -14,5 +14,6 @@ while COMPILE_RUN:
     Debug.now()
     Debug.df("Text input",text)
     interpretter = INTERPRETTER.Interpreter(text, Debug)
+    interpretter.TOKENIZE()
     print(interpretter.PARSE())
 

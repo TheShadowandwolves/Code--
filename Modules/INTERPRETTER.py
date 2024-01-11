@@ -10,10 +10,11 @@ class Interpreter:
 
     def TOKENIZE(self):
         pos = 0
-        lexer = Lexer.Lexer(self.text)
+        lexer = Lexer.Lexer(self.text, self.Debug)
         while pos < len(self.text):
             self.stack.append(lexer.get_next_token())
             pos += 1
+        self.Debug.df("stack", self.stack)
         
     def PARSE(self):
         parser = Parser.Parser(self.stack, self.Debug)

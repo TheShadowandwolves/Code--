@@ -84,35 +84,44 @@ class Parser:
     
     @property
     def current_token(self):
+        if self.pos >= self.length:
+            return Tok.Token(tokens['EOF'], None, self.pos)
+        self.Debug.df("current_token", self.TokenStack[self.pos])
         return self.TokenStack[self.pos]
 
     def error(self):
         raise Exception('Invalid syntax')
     
     def nextToken(self):
-        if self.pos < self.length:
+        if self.pos < self.length -1:
             self.pos += 1
             return self.TokenStack[self.pos]
         else:
-            self.error()
+            return Tok.Token(tokens['EOF'], None, self.pos)
 
     def eat(self, token_type):
-        if self.current_token['type'] == token_type:
+        if self.current_token.type == token_type:
             temp = self.nextToken()
-            self.current_token['type'] = temp['type']
-            self.current_token['value'] = temp['value']
+            self.current_token.type = temp.type
+            self.current_token.value = temp.value
         else:
             self.error()
     
 
     def factor(self):
         token = self.current_token
-
-        match token['type']:
+        self.Debug.df("factor", token.type)
+        match token.type:
             case 'PLUS':
-                self.eat(tokens['PLUS'])
-                if (self.bin[-1] == tokens['NUM']):
-                    return self.bin.pop() + self.factor()
+                self.eat('PLUS')
+                self.Debug.df("bin", self.bin)
+                if (self.bin[-1].type == 'NUM'):
+                    next = self.factor()
+                    self.Debug.df("next", next)
+                    self.Debug.df("bin", self.bin)
+                    token = self.current_token
+                    self.Debug.df("token", token)
+                    return self.bin.pop().value + token.value
                 else:
                     self.error()
             case 'MINUS':
@@ -135,24 +144,24 @@ class Parser:
                     self.error()
             case 'NUM':
                 self.eat(tokens['NUM'])
-                self.bin.append(token['value'])
-                return token['value']
+                self.bin.append(token)
+                return token.value
             case 'STRING':
                 self.eat(tokens['STRING'])
-                self.bin.append(token['value'])
-                return token['value']
+                self.bin.append(token)
+                return token.value
             case 'IDENTIFIER':
                 self.eat(tokens['IDENTIFIER'])
-                self.bin.append(token['value'])
-                return token['value']
+                self.bin.append(token.value)
+                return token.value
             case 'BOOL':
                 self.eat(tokens['BOOL'])
-                self.bin.append(token['value'])
-                return token['value']
+                self.bin.append(token.value)
+                return token.value
             case 'NIL':
                 self.eat(tokens['NIL'])
-                self.bin.append(token['value'])
-                return token['value']
+                self.bin.append(token.value)
+                return token.value
             case 'LPAREN':
                 self.eat(tokens['LPAREN'])
                 args = []
@@ -172,12 +181,16 @@ class Parser:
             case 'KEYWORD':
                 self.eat(tokens['KEYWORD'])
                 return None
+            case 'PRINT':
+                self.eat(tokens['PRINT'])
+                return None
             case _:
                 self.error()
 
     
     def expr(self):
-        return self.factor()
+        while self.current_token.type != tokens['EOF']:
+            self.factor()
     
     def parse(self):
         return self.expr()

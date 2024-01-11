@@ -91,7 +91,28 @@ class Lexer:
             return Token.Token('EOF', None, pos=self.pos)
 
         current_char = self.df("CURRENT_TEXT",text[self.pos])
-
+        if current_char.isdigit():
+            self.df("NUM", f"NUM, pos: {self.pos}")
+            num = ""
+            while self.pos < len(text) and text[self.pos].isdigit():
+                num += text[self.pos]
+                self.pos += 1
+            return Token.Token('NUM', int(num), pos=self.pos)
+        
+        if current_char.isalpha():
+            self.df("IDENTIFIER", f"IDENTIFIER, pos: {self.pos}")
+            word = ""
+            while self.pos < len(text) and text[self.pos].isalpha():
+                word += text[self.pos]
+                self.pos += 1
+            if word == "print":
+                while self.pos < len(text):
+                    self.pos += 1
+                return Token.Token('PRINT', word, self.pos)
+            elif word in tokens:
+                return Token.Token(tokens[word], word, self.pos)
+            else:
+                return Token.Token('IDENTIFIER', word, self.pos)
         match current_char:
             case '#':
                 # exclude the comment from the token list
@@ -155,28 +176,7 @@ class Lexer:
                 self.pos += 1
                 return self.get_next_token()
             
-            case current_char.isdigit():
-                self.df("NUM", f"NUM, pos: {self.pos}")
-                num = ""
-                while self.pos < len(text) and text[self.pos].isdigit():
-                    num += text[self.pos]
-                    self.pos += 1
-                return Token.Token('NUM', int(num), pos=self.pos)
-            
-            case current_char.isalpha():
-                self.df("IDENTIFIER", f"IDENTIFIER, pos: {self.pos}")
-                word = ""
-                while self.pos < len(text) and text[self.pos].isalpha():
-                    word += text[self.pos]
-                    self.pos += 1
-                if word == "print":
-                    while self.pos < len(text):
-                        self.pos += 1
-                    return Token.Token('PRINT', word, self.pos)
-                elif word in tokens:
-                    return Token.Token(tokens[word], word, self.pos)
-                else:
-                    return Token.Token('IDENTIFIER', word, self.pos)
+
 
             case '"':
                 self.df("STRING", f"STRING, pos: {self.pos}")

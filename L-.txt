@@ -1,0 +1,358 @@
+main file:
+
+#include <iostream>
+#include <string>
+#include "Var.h"
+using namespace std;
+
+
+
+int main() {
+    for (int i = 0; i < 3; i++)
+    {
+        cases("c", "$4", "$5");
+        cases("d", "$4", "$5");
+        cases("c", ".c", "$5");
+    }
+
+}
+
+
+Compiler.h:
+
+#pragma once
+#include <list>
+#include <string>
+using namespace std;
+
+class Var {
+public:
+    string name;
+    string value;
+    char type;
+    void print_c();
+};
+
+//void Print(string);
+void Print();
+template <typename T>  void Print(T);
+string Write();
+int cases(string, string, string);
+list<Var>::iterator search_val(list<Var>, Var);
+bool search_if_val(list<Var>*, Var);
+void store_val(list<Var>, Var);
+void store_val(list<Var>*, Var);
+string erase_var(string);
+char input_type(string);
+
+Compiler.cpp:
+
+#include "Var.h"
+#include <iostream>
+#include <string>
+#include <math.h>
+#include <list>
+#include <algorithm>
+using namespace std;
+
+//prints name and value
+void Var::print_c() {
+    Print(name + " = " + value);
+}
+
+// returns index where found class Var as given var are indentical
+list<Var>::iterator search_val(list<Var>* array, Var var) {
+    //Create an iterator of std::list
+    std::list<Var>::iterator it;
+    list<Var>::iterator is;
+    // Make iterate point to begining and incerement it one by one till it reaches the end of list.
+    for (it = array->begin(); it != array->end(); it++)
+    {
+        Print(it->name);
+        if (it->name == var.name) {
+            is = it;
+            break;
+        }
+    }
+    //Print(is->name);
+    return is;
+}
+// returns Var that has the same name
+
+
+Var search_var(list<Var> array, string gname) {
+    //Create an iterator of std::list
+    // Make iterate point to begining and incerement it one by one till it reaches the end of list.
+    //list<Var>::iterator it;
+    // temp class var contains string name, string value and char type
+    Var var;
+
+
+    auto it = std::find_if(std::begin(array),
+        std::end(array),
+        [gname](Var const& v) { return v.name == gname; });
+
+    if (array.end() == it)
+    {
+        std::cout << "item not found" << std::endl;
+    }
+    else
+    {
+        const int pos = std::distance(array.begin(), it) + 1;
+        std::cout << "item  found at position " << pos << std::endl;
+    }
+    var.name = it->name;
+    var.value = it->value;
+    var.type = it->type;
+    Print("Found with value: " + var.name + var.value);
+    return var;
+
+
+
+    /*for (it = array.begin(); it != array.end(); it++)
+    {
+      Print(it->name);
+        if(it->name == gname){
+          var.name = it->name;
+          var.value = it->value;
+          var.type = it->type;
+          return var;
+        }
+    }
+      //Print(is->name);
+      Var fal;
+      fal.name = "NONE";
+      fal.value = "0";
+
+      return fal;
+    */
+}
+
+// if val exist in array, 
+bool search_if_val(list<Var> array, Var var) {
+    //Create an iterator of list
+    list<Var>::iterator it;
+
+    for (it = array.begin(); it != array.end(); it++)
+    {
+        Print(it->name);
+        if (it->name == var.name) {
+            return true;
+        }
+    }
+    //Print(is->name);
+    return false;
+}
+
+// changes value of a class type inside the array, works perfectly
+void change_insid(list<Var> array, const Var var) {
+    // void replace(list<Var> &array, const string &var->name, &var->value ) {
+    for (auto it = array.rbegin(); it != array.rend(); it++) {
+        if (it->name == var.name) {
+            it->type = var.type;
+            it->value = var.value;
+            /* To stop searching */
+            return;
+        }
+    }
+    /* Nothing replaced, error message? */
+}
+
+//stores the value inside the array, if exist already should just change, works perfectly
+void store_val(list<Var> val_array, Var var)
+{
+    if (val_array.empty()) {
+        val_array.push_front(var);
+        val_array.begin()->print_c();
+        Print("Entering empty");
+    }
+    else {
+        if (!search_if_val(val_array, var)) {
+            val_array.push_front(var);
+            val_array.begin()->print_c();
+            Print("Entering not found");
+        }
+        else {
+            Print("Given");
+            change_insid(val_array, var);
+        }
+    }
+}
+
+
+
+
+// erases first letter in string
+string erase_var(string var) {
+    var.erase(0, 1);
+    return var;
+}
+
+//get digits of string and compare if double, string or int etc. so well also if it is an already existing value, shown as . before value
+char input_type(string var) {
+    const char g = var[0];
+    //return string
+    if (g == '/') {
+        return '/';
+    }
+    //return int
+    else if (g == '$') {
+        return '$';
+    }
+    //return double
+    else if (g == '%') {
+        return '%';
+    }
+    else if (g == '.') {
+        return '.';
+    }
+    //return false
+    else {
+        return '!';
+    }
+
+}
+
+
+
+
+//special print functions, works
+template <typename T>  void Print(T num) { cout << "L-> " << num << endl; }
+
+void Print() { cout << "L-> "; }
+string Write() {
+    Print();
+    string txt;
+    cin >> txt;
+    return txt;
+}
+
+// calc_i makes the calculation for an integer
+string calc_i(string num1, string num2, char op) {
+    int res;
+    num1 = erase_var(num1);
+    num2 = erase_var(num2);
+    int n1 = stoi(num1);
+    int n2 = stoi(num2);
+    if (op == '+') {
+        res = n1 + n2;
+    }
+    else if (op == '-') {
+        res = n1 - n2;
+    }
+    else if (op == '*') {
+        res = n1 * n2;
+    }
+    else if (op == '/') {
+        if (n2) {
+            res = n1 / n2;
+        }
+        else {
+            cout << "Invalid Input - cannot devide by 0";
+        }
+    }
+    else if (op == '^') {
+        res = pow(n1, n2);
+    }
+    return to_string(res);
+}
+
+// gets the type of the class instance inside the array (if found), does not work
+char get_variable_type(list<Var> array, string var) {
+    char save = '.';
+
+    var = erase_var(var);
+    Var temp = search_var(array, var);
+    if (temp.name != "NONE") {
+        Print("type: " + to_string(temp.type));
+        return temp.type;
+    }
+    else {
+        return save;
+    }
+}
+// gets the value itself with the type of the class instance inside the array, does not work
+string get_variable(list<Var> array, string var) {
+    Print(var);
+    var = erase_var(var);
+    Print("new var: " + var);
+    Var temp = search_var(array, var);
+    Print("Found Var name: " + temp.name);
+    Print("Found Var value: " + temp.value);
+    if (temp.name != "NONE") {
+        string final = temp.type + temp.value;
+        Print(final);
+        return final;
+
+    }
+    else {
+        return var;
+    }
+
+}
+
+
+int cases(string name, string value1, string value2)
+{
+    // array that stores all variables
+    list<Var> val_array;
+    char op;
+    string val, res_s;
+    Var var1;
+    char c1, c2;
+
+    // needs to implement that previous variables can be taken
+    Print("add");
+    op = '+';
+    var1.name = name;
+    Print(name);
+    //check input type
+    c1 = input_type(value1);
+    c2 = input_type(value2);
+    if (c1 == '.') {
+        Print("Get into .");
+        c1 = get_variable_type(val_array, value1);
+        Print(c1);
+        value2 = get_variable(val_array, value2);
+        Print(value1);
+    }
+    if (c2 == '.') {
+        c2 = get_variable_type(val_array, value2);
+        value2 = get_variable(val_array, value2);
+    }
+
+    //equal
+    if (c1 == '$' && c2 == '$') {
+        var1.value = calc_i(value1, value2, op);
+        var1.type = '$';
+    }
+  
+    else {
+        Print("Invalid Operation - cannot convert types");
+        
+    }
+
+    store_val(val_array, var1);
+    var1.print_c();
+    return 1;
+    // do stuff
+}
+
+
+result:
+/*L->
+add
+L-> add
+L-> c
+L-> c = 9
+L-> Entering empty
+L-> c = 9
+L-> add
+L-> d
+L-> d = 9
+L-> Entering empty
+L-> d = 9
+L-> add
+L-> c
+L-> Get into .
+item not found

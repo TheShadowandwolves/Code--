@@ -5,6 +5,15 @@ class Token:
         self.value = value
         self.pos = pos
 
+    def getType(self):
+        return self.type
+
+    def getValue(self):
+        return self.value
+    
+    def getPos(self):
+        return self.pos
+
     def __str__(self):
         return f"Token({self.type}, {self.value})"
 
