@@ -1,5 +1,6 @@
 import Modules.LEXER as Lexer
 import Modules.PARSER as Parser
+import Modules.OPERATION as OP
 
 # Interpreter
 class Interpreter:
@@ -19,7 +20,17 @@ class Interpreter:
     def PARSE(self):
         parser = Parser.Parser(self.stack, self.Debug)
         result = parser.parse()
-        return result
+        for ar in result:
+            match ar.op:
+                case '+':
+                    print(ar.args[0] + ar.args[1])
+                case '-':
+                    print(ar.args[0] - ar.args[1])
+                case '*':
+                    print(ar.args[0] * ar.args[1])
+                case '/':
+                    print(ar.args[0] / ar.args[1])
+
     
 
 

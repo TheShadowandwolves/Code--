@@ -1,5 +1,5 @@
 import Modules.TOKENS as Tok
-import Modules.LEXER as Lex
+import Modules.OPERATION as OP
 import Modules.DEBUG as DEBUG
 
 tokens = {
@@ -84,10 +84,11 @@ class Parser:
     
     @property
     def current_token(self):
-        if self.pos >= self.length:
+        i = self.pos
+        if i >= self.length:
             return Tok.Token(tokens['EOF'], None, self.pos)
-        self.Debug.df("current_token", self.TokenStack[self.pos])
-        return self.TokenStack[self.pos]
+        self.Debug.df("current_token", self.TokenStack[i])
+        return self.TokenStack[i]
 
     def error(self):
         raise Exception('Invalid syntax')
@@ -99,6 +100,13 @@ class Parser:
         else:
             return Tok.Token(tokens['EOF'], None, self.pos)
 
+    def peek(self):
+        if self.pos < self.length -1:
+            return self.TokenStack[self.pos + 1]
+        else:
+            return Tok.Token(tokens['EOF'], None, self.pos)
+
+
     def eat(self, token_type):
         if self.current_token.type == token_type:
             temp = self.nextToken()
@@ -108,20 +116,19 @@ class Parser:
             self.error()
     
 
-    def factor(self):
-        token = self.current_token
+    def factor(self, i):
+        self.pos = i 
+        token = self.current_token()
         self.Debug.df("factor", token.type)
         match token.type:
             case 'PLUS':
-                self.eat('PLUS')
                 self.Debug.df("bin", self.bin)
-                if (self.bin[-1].type == 'NUM'):
-                    next = self.factor()
-                    self.Debug.df("next", next)
-                    self.Debug.df("bin", self.bin)
-                    token = self.current_token
-                    self.Debug.df("token", token)
-                    return self.bin.pop().value + token.value
+                if (self.bin[-1].type == 'NUM' or self.bin[-1].type == 'STRING'):
+                    next = self.peek()
+                    self.bin.append(next)
+                    args.append(self.bin.pop().value)
+                    args.append(self.peek().value)
+                    return OP.Operation('+', args)
                 else:
                     self.error()
             case 'MINUS':
@@ -189,8 +196,11 @@ class Parser:
 
     
     def expr(self):
-        while self.current_token.type != tokens['EOF']:
-            self.factor()
+        com = []
+        for i in range(self.length):
+            self.Debug.df("expr", i)
+            com.append(self.factor(i))
+        return com
     
     def parse(self):
         return self.expr()
